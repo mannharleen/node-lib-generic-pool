@@ -23,7 +23,7 @@ This library provides a simple yet powerful way of implementing connection (& ot
 # Usage
 
 ```js
-const Pool = require('lib-generic-pool);
+const Pool = require('lib-generic-pool');
 /*
 create a pool by providing at least these 4 parameters:
     - connSettings: an array of parameters passed to the createFunc that will created the underlying connection
@@ -141,12 +141,12 @@ const { Pool } = require('./pool');
     let pool = await Pool(connSettings, createFunc, destroyFunc, validateConnFunc, { acquireTimeoutSeconds: 5, max: 1 });
     try {
         let conn1 = await pool.acquire()        
-        console.log('list dir = ', await conn1.list('/origin-sftp-dsnp'));
+        console.log('list dir = ', await conn1.list('/directoryA'));
         await pool.release(conn1)
         
         // will wait upto 5 secs and then use the same connection (conn1)
         let conn2 = await pool.acquire()        
-        console.log('list dir = ', await conn2.list('/origin-sftp-dsnp'));
+        console.log('list dir = ', await conn2.list('/directoryA'));
     } catch(e) {
         console.error(e)
     }    
@@ -161,7 +161,7 @@ Pool(connSettings, createFunc, destroyFunc, validateConnFunc, { acquireTimeoutSe
         let promise1 =
             pool.acquire()
                 .then(conn => {
-                    return conn.list('/origin-sftp-dsnp')
+                    return conn.list('/directoryA')
                         .then(ls => { console.log(ls); return })
                 })
 
@@ -169,7 +169,7 @@ Pool(connSettings, createFunc, destroyFunc, validateConnFunc, { acquireTimeoutSe
             // will wait upto 5 secs and then use the same connection (conn1)
             pool.acquire()
                 .then(conn => {
-                    return conn.list('/origin-sftp-dsnp')
+                    return conn.list('/directoryA')
                         .then(ls => { console.log(ls); return })
                 })
 
