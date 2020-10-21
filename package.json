@@ -1,0 +1,27 @@
+{
+  "name": "lib-generic-pool",
+  "version": "0.1.0",
+  "description": "a generic pool implementation without any bells and whistles",
+  "main": "index.js",
+  "scripts": {
+    "test": "jest"
+  },
+  "keywords": [
+    "pool",
+    "connection",
+    "generic",
+    "lib"
+  ],
+  "author": "harleen mann",
+  "license": "MIT",
+  "devDependencies": {
+    "jest": "^26.6.0"
+  },
+  "dependencies": {
+    "uuid": "^8.3.1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/mannharleen/node-lib-generic-pool.git"
+  }
+}
