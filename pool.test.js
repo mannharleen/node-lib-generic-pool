@@ -120,6 +120,41 @@ test('create pool with min = 2 and max = 2, acquire 2, then try acquiring anothe
     await expect(pool.acquire()).rejects.toEqual("Unable to aquire a connection. All connection are busy. Hint: Try increasing the acquireTimeoutSeconds");
 });
 
+test('create pool with min = 1 and max = 1, acquire 1, then try acquiring another that timesout after acquireTimeoutSeconds, then try acquiring another', async () => {
+    let pool = await Pool(connSettings, createFunc, destroyFunc, validateConnFunc, { min: 1, max: 1, acquireTimeoutSeconds: 1 });
+
+    expect(Object.values(pool.availableQueue).length).toBe(1);
+    expect(Object.values(pool.unavailableQueue).length).toBe(0);
+
+    let conn1 = await pool.acquire()    
+    expect(Object.values(pool.availableQueue).length).toBe(0);
+    expect(Object.values(pool.unavailableQueue).length).toBe(1);
+    
+    await expect(pool.acquire()).rejects.toEqual("Unable to aquire a connection. All connection are busy. Hint: Try increasing the acquireTimeoutSeconds");
+    await expect(pool.acquire()).rejects.toEqual("Unable to aquire a connection. All connection are busy. Hint: Try increasing the acquireTimeoutSeconds");
+});
+
+test('create pool with min = 1 and max = 1, acquire 1, release 1, then try acquiring another that timesout after acquireTimeoutSeconds, then try acquiring another', async () => {
+    let pool = await Pool(connSettings, createFunc, destroyFunc, validateConnFunc, { min: 1, max: 1, acquireTimeoutSeconds: 1 });
+
+    expect(Object.values(pool.availableQueue).length).toBe(1);
+    expect(Object.values(pool.unavailableQueue).length).toBe(0);
+
+    let conn1 = await pool.acquire()    
+    expect(Object.values(pool.availableQueue).length).toBe(0);
+    expect(Object.values(pool.unavailableQueue).length).toBe(1);
+
+    await pool.release(conn1)
+    expect(Object.values(pool.availableQueue).length).toBe(1);
+    expect(Object.values(pool.unavailableQueue).length).toBe(0);
+    await pool.acquire()    
+    expect(Object.values(pool.availableQueue).length).toBe(0);
+    expect(Object.values(pool.unavailableQueue).length).toBe(1);
+
+    await expect(pool.acquire()).rejects.toEqual("Unable to aquire a connection. All connection are busy. Hint: Try increasing the acquireTimeoutSeconds");
+});
+
+
 test('acquire where validateConnFunc returns true results a conn already available in pool.availableQueue being returned', async () => {
     validateConnFunc = async () => true
     let pool = await Pool(connSettings, createFunc, destroyFunc, validateConnFunc);

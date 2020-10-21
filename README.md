@@ -128,7 +128,7 @@ let validateConnFunc = async (conn) => {
     try {
         // simply using cwd api to establish validity
         await conn.cwd()
-        return false
+        return true
     } catch (e) {
         return false
     }

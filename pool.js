@@ -26,13 +26,11 @@ function Pool(connSettings, createFunc, destroyFunc, validateConnFunc, options =
         let totalConnInPool = Object.keys(this.availableQueue).length + Object.keys(this.unavailableQueue).length
         if (totalConnInPool < this.options.max) {
             let _pool_conn_id = uuidv4()
-            // this.availableQueue[_pool_conn_id] = {
-            //     _pool_conn_id: _pool_conn_id,
-            //     ...await createFunc(...connSettings)
-            // }
             let conn = await createFunc(...connSettings)
             conn._pool_conn_id = _pool_conn_id
             this.availableQueue[_pool_conn_id] = conn
+        } else {
+            null // unable to create a new conn because max has been reached
         }
     }
 
@@ -56,7 +54,7 @@ function Pool(connSettings, createFunc, destroyFunc, validateConnFunc, options =
     this.acquire = async () => {
 
         if (Object.keys(this.unavailableQueue).length === this.options.max) {
-            // all connections are unavailable, so wait until acquireTimeoutSeconds
+            // all connections are unavailable, so retry every second until acquireTimeoutSeconds
             return new Promise(async (resolve, reject) => {
                 let timeoutAttempts = Math.ceil(this.options.acquireTimeoutSeconds)
                 let attempts = 0
@@ -65,36 +63,51 @@ function Pool(connSettings, createFunc, destroyFunc, validateConnFunc, options =
                         let conn = this.availableQueue[Object.keys(this.availableQueue)[0]]
                         delete this.availableQueue[conn._pool_conn_id]
                         this.unavailableQueue[conn._pool_conn_id] = conn
-                        resolve(conn)
+                        clearInterval(intervalId)
+                        return resolve(conn)
                     }
                     if (++attempts === timeoutAttempts) {
                         clearInterval(intervalId)
-                        reject("Unable to aquire a connection. All connection are busy. Hint: Try increasing the acquireTimeoutSeconds")
+                        return reject("Unable to aquire a connection. All connection are busy. Hint: Try increasing the acquireTimeoutSeconds")
                     }
                 }, 1000)
             })
         } else {
+            // either conn is in availableQueue or one can be created
             let conn
             if (Object.keys(this.availableQueue).length === 0) {
+                // no conn in availableQueue
                 await this._create()
+                conn = this.availableQueue[Object.keys(this.availableQueue)[0]]
+                if (conn._pool_conn_id) {
+                    // check if we received the conn and not someone else
+                    delete this.availableQueue[conn._pool_conn_id]
+                    this.unavailableQueue[conn._pool_conn_id] = conn
+                } else {
+                    // try to acquire again
+                    conn = await this.acquire()
+                }                
+            } else {
+                // conn is there in availableQueue
                 conn = this.availableQueue[Object.keys(this.availableQueue)[0]]
                 delete this.availableQueue[conn._pool_conn_id]
                 this.unavailableQueue[conn._pool_conn_id] = conn
-            } else {
-                conn = this.availableQueue[Object.keys(this.availableQueue)[0]]
-                delete this.availableQueue[conn._pool_conn_id]
 
                 // validateConnFunc before giving it out            
                 if (!await this.validateConnFunc(conn)) {
-                    // recursively acquire until validateConnFunc is successful                    
-                    await this.destroyFunc(conn)
+                    // recursively acquire until validateConnFunc is successful
+                    try {
+                        await this.destroyFunc(conn)
+                    } catch(e) {}
+                    delete this.unavailableQueue[conn._pool_conn_id]
                     conn = await this.acquire()
 
                     // await this._create()
                     // conn = this.availableQueue[Object.keys(this.availableQueue)[0]]
                     // delete this.availableQueue[conn._pool_conn_id]
                 } else {
-                    this.unavailableQueue[conn._pool_conn_id] = conn
+                    // this.unavailableQueue[conn._pool_conn_id] = conn
+                    null
                 }
             }
             return conn
