@@ -1,4 +1,2 @@
-v 1.0.3
-- added skiiping test if underlying lib or its config is not available
-- removed an accidental comment
-- increased jest timeout to 1 min
+v 1.0.4
+- for pool.sftp.test.js, added description of what config file should look like

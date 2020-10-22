@@ -1,5 +1,15 @@
 /**
  * tests against "ssh2-sftp-client"
+ * sftpConfig.js should look like:
+module.exports = {
+    connSettings: {
+        host: 'xx',
+        port: 22,
+        username: 'xx',
+        password: 'xx'
+    },
+    homedir: "/xx"
+}
  */
 
 let Client, config, connSettings, createFunc, destroyFunc, validateConnFunc

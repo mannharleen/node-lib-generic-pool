@@ -1,6 +1,6 @@
 {
   "name": "lib-generic-pool",
-  "version": "1.0.1",
+  "version": "1.0.4",
   "description": "a generic pool implementation without any bells and whistles",
   "main": "index.js",
   "scripts": {
