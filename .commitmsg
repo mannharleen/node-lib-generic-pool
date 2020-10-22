@@ -1,2 +1,3 @@
-v 1.0.0
-- use of p-queue to avoid conflicts for creating connections 
+v 1.0.1
+- bug fix where new Pool(...) performs a DNS resolution but on error doesnt return the rejected promise 
+- input validation for options
