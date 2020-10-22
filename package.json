@@ -28,6 +28,7 @@
   },
   "optionalDependencies": {},
   "jest": {
-    "testTimeout": 20000
+    "testTimeout": 60000,
+    "verbose": true
   }
 }

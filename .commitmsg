@@ -1,4 +1,4 @@
-v 1.0.2
-- modularizing tests
-- minor bug fix where options were being validated before defaults were applied (using assign)
-- added tests for sftp where underlying lib = ssh2-sftp-client
+v 1.0.3
+- added skiiping test if underlying lib or its config is not available
+- removed an accidental comment
+- increased jest timeout to 1 min
