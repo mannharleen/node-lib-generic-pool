@@ -16,11 +16,12 @@ function Pool(connSettings, createFunc, destroyFunc, validateConnFunc, options =
 
     this.destroyFunc = destroyFunc
     this.validateConnFunc = validateConnFunc
+    this.options = Object.assign({ min: 1, max: 5, acquireTimeoutSeconds: 10 }, options)
     // input validation for options    
-    if(!( options.min >=1 && options.max >=1 && options.acquireTimeoutSeconds >= 1)) {
+    if(!( this.options.min >=1 && this.options.max >=1 && this.options.acquireTimeoutSeconds >= 1)) {
         return Promise.reject("options to the pool must satisfy the following criteria (min >=1 && max >=1 && acquireTimeoutSeconds >= 1)")
     }
-    this.options = Object.assign({ min: 1, max: 5, acquireTimeoutSeconds: 10 }, options)
+    
     this.availableQueue = {}        // FIanyO // {_pool_conn_id: {...<actual connection object>, _pool_conn_id: ""} }
     this.unavailableQueue = {};
 

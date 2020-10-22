@@ -15,7 +15,8 @@
   "author": "harleen mann",
   "license": "MIT",
   "devDependencies": {
-    "jest": "^26.6.0"
+    "jest": "^26.6.0",
+    "ssh2-sftp-client": "^5.3.1"
   },
   "dependencies": {
     "p-queue": "^6.6.2",
@@ -24,5 +25,9 @@
   "repository": {
     "type": "git",
     "url": "https://github.com/mannharleen/node-lib-generic-pool.git"
+  },
+  "optionalDependencies": {},
+  "jest": {
+    "testTimeout": 20000
   }
 }

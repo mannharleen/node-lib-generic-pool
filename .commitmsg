@@ -1,3 +1,4 @@
-v 1.0.1
-- bug fix where new Pool(...) performs a DNS resolution but on error doesnt return the rejected promise 
-- input validation for options
+v 1.0.2
+- modularizing tests
+- minor bug fix where options were being validated before defaults were applied (using assign)
+- added tests for sftp where underlying lib = ssh2-sftp-client
