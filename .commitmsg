@@ -1,4 +1,2 @@
-v 0.2.0 
-- some bug fixes around acquire that came about during stress testing; 
-- minor update to readme.md;
-- added additional tests
+v 1.0.0
+- use of p-queue to avoid conflicts for creating connections 

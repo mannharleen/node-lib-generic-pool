@@ -1,4 +1,5 @@
 const { v4: uuidv4 } = require('uuid');
+const { default: PQueue } = require('p-queue');
 
 /**
  * 
@@ -22,6 +23,8 @@ function Pool(connSettings, createFunc, destroyFunc, validateConnFunc, options =
     /**
      * creates a connection if total connections <= max and adds it to the availableQueue
      */
+    const pqueueCreate = new PQueue({ concurrency: 1 });
+    this.create = () => { return pqueueCreate.add(() => this._create()) }
     this._create = async () => {
         let totalConnInPool = Object.keys(this.availableQueue).length + Object.keys(this.unavailableQueue).length
         if (totalConnInPool < this.options.max) {
@@ -34,7 +37,12 @@ function Pool(connSettings, createFunc, destroyFunc, validateConnFunc, options =
         }
     }
 
-    this.destroy = async () => {
+    /**
+     * destroys all connections in both available and unabvailable Queues
+     */
+    const pqueueDestroy = new PQueue({ concurrency: 1 });
+    this.destroy = () => { return pqueueDestroy.add(() => this._destroy()) } // pqueue.add( () => this._create())
+    this._destroy = async () => {
         /**
          * destroy all connections in the pool
          */
@@ -76,17 +84,17 @@ function Pool(connSettings, createFunc, destroyFunc, validateConnFunc, options =
             // either conn is in availableQueue or one can be created
             let conn
             if (Object.keys(this.availableQueue).length === 0) {
-                // no conn in availableQueue
-                await this._create()
+                // no conn in availableQueue                
+                await this.create()
                 conn = this.availableQueue[Object.keys(this.availableQueue)[0]]
-                if (conn._pool_conn_id) {
+                if (conn) {
                     // check if we received the conn and not someone else
                     delete this.availableQueue[conn._pool_conn_id]
                     this.unavailableQueue[conn._pool_conn_id] = conn
                 } else {
                     // try to acquire again
                     conn = await this.acquire()
-                }                
+                }
             } else {
                 // conn is there in availableQueue
                 conn = this.availableQueue[Object.keys(this.availableQueue)[0]]
@@ -98,15 +106,10 @@ function Pool(connSettings, createFunc, destroyFunc, validateConnFunc, options =
                     // recursively acquire until validateConnFunc is successful
                     try {
                         await this.destroyFunc(conn)
-                    } catch(e) {}
+                    } catch (e) { }
                     delete this.unavailableQueue[conn._pool_conn_id]
                     conn = await this.acquire()
-
-                    // await this._create()
-                    // conn = this.availableQueue[Object.keys(this.availableQueue)[0]]
-                    // delete this.availableQueue[conn._pool_conn_id]
                 } else {
-                    // this.unavailableQueue[conn._pool_conn_id] = conn
                     null
                 }
             }
