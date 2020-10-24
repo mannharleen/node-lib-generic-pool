@@ -18,10 +18,10 @@ function Pool(connSettings, createFunc, destroyFunc, validateConnFunc, options =
     this.validateConnFunc = validateConnFunc
     this.options = Object.assign({ min: 1, max: 5, acquireTimeoutSeconds: 10 }, options)
     // input validation for options    
-    if(!( this.options.min >=1 && this.options.max >=1 && this.options.acquireTimeoutSeconds >= 1)) {
+    if (!(this.options.min >= 1 && this.options.max >= 1 && this.options.acquireTimeoutSeconds >= 1)) {
         return Promise.reject("options to the pool must satisfy the following criteria (min >=1 && max >=1 && acquireTimeoutSeconds >= 1)")
     }
-    
+
     this.availableQueue = {}        // FIanyO // {_pool_conn_id: {...<actual connection object>, _pool_conn_id: ""} }
     this.unavailableQueue = {};
 
@@ -29,8 +29,8 @@ function Pool(connSettings, createFunc, destroyFunc, validateConnFunc, options =
      * creates a connection if total connections <= max and adds it to the availableQueue
      */
     const pqueueCreate = new PQueue({ concurrency: 1 });
-    this.create = () => { return pqueueCreate.add(() => this._create()) }
-    this._create = async () => {
+    this.create = () => { return pqueueCreate.add(() => _create()) }
+    _create = async () => {
         let totalConnInPool = Object.keys(this.availableQueue).length + Object.keys(this.unavailableQueue).length
         if (totalConnInPool < this.options.max) {
             let _pool_conn_id = uuidv4()
@@ -46,8 +46,8 @@ function Pool(connSettings, createFunc, destroyFunc, validateConnFunc, options =
      * destroys all connections in both available and unabvailable Queues
      */
     const pqueueDestroy = new PQueue({ concurrency: 1 });
-    this.destroy = () => { return pqueueDestroy.add(() => this._destroy()) } // pqueue.add( () => this._create())
-    this._destroy = async () => {
+    this.destroy = () => { return pqueueDestroy.add(() => _destroy()) }
+    _destroy = async () => {
         /**
          * destroy all connections in the pool
          */
@@ -130,13 +130,13 @@ function Pool(connSettings, createFunc, destroyFunc, validateConnFunc, options =
     return new Promise(async (resolve, reject) => {
         try {
             for (let i = 0; i < this.options.min; i++) {
-                await this._create()
+                await this.create()
             }
             return resolve(this)
-        } catch(e) {
+        } catch (e) {
             return reject(e)
         }
-        
+
     })
 }
 

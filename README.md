@@ -19,6 +19,7 @@ This library provides a simple yet powerful way of implementing connection (& ot
 - [FAQ](#faq)
 - [Examples](#examples)
   - [Using `ssh2-sftp-client`](#using-ssh2-sftp-client)
+  - [Using `node-redis`](#using-node-redis)
 
 # Usage
 
@@ -102,81 +103,13 @@ Destoys all connections in the pool using `destroyFunc`
 
 - Q: What `underlying libraries` can be used with lib-generic-pool ?
     - A: Any library that manages connections. However, the lib is oficially been tested with the following:
-        - ssh2-sftp-client
+        - ssh2-sftp-client https://www.npmjs.com/package/ssh2-sftp-client
+        - node-redis https://github.com/NodeRedis/node-redis/
 
 # Examples
 
 ## Using `ssh2-sftp-client`
+Refer to file named `pool.sftp.test.js`
 
-### Using async await
-```js
-let connSettings = [{
-    host: 'xxx',
-    username: 'xxx',
-    password: 'xxx'
-}];
-let createFunc = async (connSettings) => {
-    let sftp = new Client()
-    await sftp.connect(connSettings)
-    return sftp
-};
-let destroyFunc = async (conn) => {
-    conn.end()
-};
-
-let validateConnFunc = async (conn) => {
-    try {
-        // simply using cwd api to establish validity
-        await conn.cwd()
-        return true
-    } catch (e) {
-        return false
-    }
-};
-
-const { Pool } = require('./pool');
-
-
-(async () => {
-    let pool = await Pool(connSettings, createFunc, destroyFunc, validateConnFunc, { acquireTimeoutSeconds: 5, max: 1 });
-    try {
-        let conn1 = await pool.acquire()        
-        console.log('list dir = ', await conn1.list('/directoryA'));
-        await pool.release(conn1)
-        
-        // will wait upto 5 secs and then use the same connection (conn1)
-        let conn2 = await pool.acquire()        
-        console.log('list dir = ', await conn2.list('/directoryA'));
-    } catch(e) {
-        console.error(e)
-    }    
-    await pool.destroy()    
-})().catch(e => { console.error(e) })
-```
-
-### using promise then catch all
-```js
-Pool(connSettings, createFunc, destroyFunc, validateConnFunc, { acquireTimeoutSeconds: 5, max: 1 })
-    .then(pool => {
-        let promise1 =
-            pool.acquire()
-                .then(conn => {
-                    return conn.list('/directoryA')
-                        .then(ls => { console.log(ls); return })
-                })
-
-        let promise2 =
-            // will wait upto 5 secs and then use the same connection (conn1)
-            pool.acquire()
-                .then(conn => {
-                    return conn.list('/directoryA')
-                        .then(ls => { console.log(ls); return })
-                })
-
-        Promise.all([promise1, promise2]).then(
-            pool.destroy
-        )
-
-    })
-    .catch(e => { console.error(e) })
-```
+## Using `node-redis`
+Refer to file named `pool.redis.test.js`

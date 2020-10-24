@@ -1,15 +1,15 @@
 /**
- * tests against "ssh2-sftp-client"
+ * tests against "https://www.npmjs.com/package/ssh2-sftp-client"
  * sftpConfig.js should look like:
 module.exports = {
-    connSettings: {
+    connSettings: [{
         host: 'xx',
         port: 22,
         username: 'xx',
         password: 'xx'
     },
     homedir: "/xx"
-}
+}]
  */
 
 let Client, config, connSettings, createFunc, destroyFunc, validateConnFunc
@@ -18,7 +18,7 @@ try {
     Client = require('ssh2-sftp-client');
     config = require('./_sftpConfig.js');
 
-    connSettings = [config.connSettings];
+    connSettings = config.connSettings;
     createFunc = async (connSettings) => {
         let sftp = new Client()
         await sftp.connect(connSettings)

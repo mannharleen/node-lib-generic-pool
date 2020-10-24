@@ -1,2 +1,2 @@
-v 1.0.4
-- for pool.sftp.test.js, added description of what config file should look like
+v 1.0.5
+- added test against node-redis
